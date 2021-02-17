@@ -4,11 +4,11 @@ import FileSearch from './components/FileSearch'
 function App() {
   return (
     <div className="App container-fluid">
-      <div class="row">
-        <div class="col-3">
-          <FileSearch title="我的云文档" onFileSearch={() => {}} />
+      <div className="row">
+        <div className="col-3">
+          <FileSearch onFileSearch={(value) => {console.log('value', value)}} />
         </div>
-        <div class="col-9">
+        <div className="col-9">
           right
         </div>
       </div>
