@@ -1,29 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import useKeyPress from '../hooks/useKeyPress'
 
 const FileSearch = ({ title, onFileSearch }) => {
   const [inputActive, setInputActive] = useState(false)
   const [value, setValue] = useState('')
   const node = useRef(null)
 
-  const closeEvent = (event) => {
-    event.preventEvent()
+  const closeEvent = () => {
     setInputActive(false)
     setValue('')
+    onFileSearch('')
   }
+  const keyDown = useKeyPress(13)
+  const esc = useKeyPress(27)
   useEffect(() => {
-    const handleInputEvent = (event) => {
-      const { keyCode } = event
-      if (keyCode === 13 && inputActive) { // enter
-        onFileSearch(value)
-      } else if (keyCode === 27 && inputActive) { // esc
-        closeEvent(event)
-      }
-    }
-    document.addEventListener('keyup', handleInputEvent)
-
-    return () => {
-      document.removeEventListener('keyup', handleInputEvent)
+    if (keyDown && inputActive) { // enter
+      onFileSearch(value)
+    } else if (esc && inputActive) { // esc
+      closeEvent()
     }
   })
 
@@ -50,7 +45,7 @@ const FileSearch = ({ title, onFileSearch }) => {
           <input className="form-control" value={value}
             ref={node}
             onChange={(e) => {setValue(e.target.value)}} />
-          <div onClick={() => {setInputActive(false)}}>
+          <div onClick={closeEvent}>
             <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="currentColor" className="bi bi-x" viewBox="0 0 16 16">
               <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
             </svg>
