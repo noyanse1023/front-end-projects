@@ -8,8 +8,11 @@ import SimpleMDE from 'react-simplemde-editor'
 import "easymde/dist/easymde.min.css"
 import './App.scss'
 import uuid from 'uuid/dist/v4'
-
-const data = [
+import { flattenArray, objToArray } from './utils/helper'
+// 如果只是require,webpack会拦截，从node_modules中找，加上window之后，webpack就不拦截了,控制权交给nodejs的运行环境
+const fs = window.require('fs')
+console.log('fs', fs)
+const json = [
   {
     id: '1',
     title: '11111'
@@ -28,17 +31,18 @@ const data = [
   }
 ]
 function App() {
-  const defaultFileId = data[0].id
-  const [files, setFiles] = useState(data)
+  const defaultFileId = json[0].id
+  const [files, setFiles] = useState(flattenArray(json))
   const [unSavedIds, setUnsavedIds] = useState([])
   const [activedId, setActivedId] = useState(defaultFileId)
   const [opendFileIds, setOpenedFileIds] = useState([defaultFileId])
   const [searchedFiles, setSearchedFiles] = useState()
-
+  const filesArray = objToArray(files)
   const opendFiles = opendFileIds.map(openId => {
-    return files.find(file => file.id === openId)
+    // return files.find(file => file.id === openId)
+    return files[openId]
   })
-  const activedFile = files.find(file => file.id === activedId)
+  const activedFile = files[activedId]
   const fileClick = (id) => {
     // set current file id
     setActivedId(id)
@@ -66,15 +70,14 @@ function App() {
     }
   }
   const fileChange = (activedId, value) => {
-    // loop through array to update to new value
-    const newFiles = files.map(file => {
-      if (file.id === activedId) {
-        file.body = value
-      }
-      return file
+    const newFile = {
+      ...files[activedId],
+      body: value
+    }
+    setFiles({
+      ...files,
+      [activedId]: newFile
     })
-    console.log('newFiles', newFiles)
-    setFiles(newFiles)
     // update unsaved file ids
     if (!unSavedIds.includes(activedId)) {
       setUnsavedIds([
@@ -85,45 +88,42 @@ function App() {
   }
   // left pannel operations
   const deleteFile = (id) => {
-    const result = files.filter(file => file.id !== id)
-    console.log('delete file', id, result)
-    setFiles(result)
+    delete files[id]
+    setFiles(files)
     // close rignt pannel tab opened
     tabClose(id)
   }
   const updateFileName = (id, title) => {
-    const newFiles = files.map(file => {
-      if (file.id === id) {
-        file.title = title
-        if (file.isNew) {
-          file.isNew = false
-        }
-      }
-      return file
+    const modifyFile = {
+      ...files[id],
+      title,
+      isNew: false
+    }
+    setFiles({
+      ...files,
+      [id]: modifyFile
     })
-    setFiles(newFiles)
   }
   const fileSearch = (keyword) => {
     // filter new files based on the keyword
-    const newFiles = files.filter(file => file.title.includes(keyword))
+    const newFiles = filesArray.filter(file => file.title.includes(keyword))
     setSearchedFiles(newFiles)
   }
   const createFile = () => {
-    console.log('create')
     const newId = uuid()
-    const newFiles = [
+    const newFile = {
+      id: newId,
+      title: '',
+      body: '### 请输入markdown',
+      createAt: Date.now(),
+      isNew: true
+    }
+    setFiles({
       ...files,
-      {
-        id: newId,
-        title: '',
-        body: '### 请输入markdown',
-        createAt: Date.now(),
-        isNew: true
-      }
-    ]
-    setFiles(newFiles)
+      [newId]: newFile
+    })
   }
-  const fileList = searchedFiles?.length ? searchedFiles : files
+  const fileList = searchedFiles?.length ? searchedFiles : filesArray
   return (
     <div className="App container-fluid">
       <div className="row no-gutters">

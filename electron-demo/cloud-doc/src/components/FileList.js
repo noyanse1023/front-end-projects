@@ -11,7 +11,7 @@ const FileList = (props) => {
     const closeSearch = (editItem) => {
         setEditStatus(false)
         setValue('')
-        if (editItem.isNew) {
+        if (editItem?.isNew) {
             onFileDelete(editItem.id)
         }
     }
