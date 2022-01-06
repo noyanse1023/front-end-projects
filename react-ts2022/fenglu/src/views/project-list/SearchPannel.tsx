@@ -5,6 +5,7 @@ export interface User {
   email?: string;
   title?: string;
   origanization?: string;
+  token?: string;
 }
 
 interface IQueryParam {
